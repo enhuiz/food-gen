@@ -1,0 +1,6 @@
+__pycache__
+ckpt
+logs
+data/processed
+vis
+*.swp

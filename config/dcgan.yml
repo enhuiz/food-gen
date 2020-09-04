@@ -1,0 +1,4 @@
+name: dcgan 
+runner: scripts/runners/dcgan.py
+d-lr: 2e-4
+g-lr: 1e-4
