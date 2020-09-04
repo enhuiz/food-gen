@@ -4,3 +4,4 @@ logs
 data/processed
 vis
 *.swp
+.ipynb_checkpoints
