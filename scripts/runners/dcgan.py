@@ -13,7 +13,6 @@ from torch.utils.data import ConcatDataset
 from torchzq.parsing import listof
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
-from torchvision.utils import save_image
 from torchsummary import summary
 from adamp import AdamP
 
@@ -130,11 +129,6 @@ class Runner(torchzq.GANRunner):
         z = torch.randn(n, args.zdim).to(args.device)
         z = F.normalize(z, dim=-1)
         return z
-
-    @staticmethod
-    def save_image(images, *args, **kwargs):
-        images = [image + 0.5 for image in images]
-        save_image(images, *args, **kwargs)
 
     def step(self, batch, model, logger, optimizer):
         super().step(batch, model, logger, optimizer)
