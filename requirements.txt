@@ -4,7 +4,7 @@ torchvision==0.7.0
 numpy==1.18.5
 adamp==0.3.0
 torchsummary==1.5.1
-torchzq==1.0.1
+torchzq==1.0.2
 linear_attention_transformer==0.11.1
 matplotlib==3.3.1
 opencv_python==4.4.0.42
