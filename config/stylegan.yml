@@ -1,6 +1,8 @@
 name: stylegan
 runner: scripts/runners/stylegan.py
-d-lr: 2e-4
-g-lr: 1e-4
 capacity: 8
 fmap-max: 64
+
+train:
+  d-lr: 2e-4
+  g-lr: 1e-4

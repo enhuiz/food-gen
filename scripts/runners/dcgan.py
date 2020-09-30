@@ -65,22 +65,21 @@ class AugWrapper(nn.Module):
 
 
 class Runner(torchzq.GANRunner):
-    def __init__(self, parser=None):
-        parser = parser or argparse.ArgumentParser()
-        parser.add_argument("--root", type=str, default="data/processed")
-        parser.add_argument("--capacity", type=int, default=16)
-        parser.add_argument("--zdim", type=int, default=128)
-        parser.add_argument("--ds-repeat", type=int, default=100)
-        parser.add_argument("--base-size", type=int, default=144)
-        parser.add_argument("--crop-size", type=int, default=128)
-        parser.add_argument("--aug-prob", type=float, default=0.5)
-        super().__init__(parser, name="foodgan", batch_size=32, save_every=1)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_argument("--root", type=str, default="data/processed")
+        self.add_argument("--capacity", type=int, default=16)
+        self.add_argument("--zdim", type=int, default=128)
+        self.add_argument("--ds-repeat", type=int, default=100)
+        self.add_argument("--base-size", type=int, default=144)
+        self.add_argument("--crop-size", type=int, default=128)
+        self.add_argument("--aug-prob", type=float, default=0.5)
 
     @property
     def Optimizer(self):
         return partial(AdamP, betas=(0.5, 0.9))
 
-    def create_dataset(self):
+    def create_dataset(self, split):
         dataset = self.autofeed(
             ImageFolder,
             dict(
@@ -102,6 +101,14 @@ class Runner(torchzq.GANRunner):
             dict(nc=3),
             dict(image_size="crop_size", latent_dim="zdim", ngf="capacity"),
         )
+
+        self.last_generated = None
+
+        def hook(m, i, o):
+            self.last_generated = o
+
+        G.register_forward_hook(hook)
+
         D = AugWrapper(
             self.autofeed(
                 Discriminator, dict(nc=3), dict(image_size="crop_size", ndf="capacity")
@@ -109,56 +116,37 @@ class Runner(torchzq.GANRunner):
             self.args.crop_size,
             self.args.aug_prob,
         )
+
         model = nn.ModuleList([G, D])
-        print(model)
+
         return model
 
     def prepare_batch(self, batch):
-        x, y = batch
-        return x.to(self.args.device)
+        x, _ = batch
+        return x.to(self.args.device), None
 
-    def get_real(self, x):
-        return x
-
-    def g_feed(self, x):
+    def sample(self, n):
         args = self.args
-        n = len(x)
         z = torch.randn(n, args.zdim).to(args.device)
         z = F.normalize(z, dim=-1)
-        self.fake = self.G(z)
-        return self.fake
-
-    def d_feed(self, x, _):
-        return self.D(x)
+        return z
 
     @staticmethod
     def save_image(images, *args, **kwargs):
         images = [image + 0.5 for image in images]
         save_image(images, *args, **kwargs)
 
-    def update(self, batch):
+    def step(self, batch, model, logger, optimizer):
+        super().step(batch, model, logger, optimizer)
         args = self.args
-        super().update(batch)
-        if not self.training:
-            self.fakes += list(self.fake.detach().cpu())
-            self.reals += list(batch.real.detach().cpu())
-        elif self.step % args.vis_every == 0:
-            path = Path(args.vis_dir, self.name, self.command, f"{self.step:06d}.png")
-            path.parent.mkdir(exist_ok=True, parents=True)
-            nrow = min(args.batch_size, 8)
-            self.save_image(
-                [*self.fake[:nrow], *self.get_real(batch)[:nrow]], path, nrow
-            )
+        if model.iteration % args.plot_every == 0:
+            logger.add_images("train", (self.last_generated[:16] + 0.5).clamp(0, 1))
+            logger.render(model.iteration)
 
-    def test(self):
-        self.fakes = []
-        self.reals = []
-        super().test()
-        args = self.args
-        folder = Path(args.vis_dir, self.name, self.command)
-        folder.mkdir(parents=True, exist_ok=True)
-        self.save_image(torch.stack(self.fakes), Path(folder, "fakes.png"))
-        self.save_image(torch.stack(self.reals), Path(folder, "reals.png"))
+    @torchzq.command
+    def train(self, *args, plot_every: int = 100, **kwargs):
+        self.args.plot_every = plot_every
+        super().train(*args, **kwargs)
 
 
 if __name__ == "__main__":
