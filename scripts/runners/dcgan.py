@@ -130,12 +130,21 @@ class Runner(torchzq.GANRunner):
         z = F.normalize(z, dim=-1)
         return z
 
-    def step(self, batch, model, logger, optimizer=None):
-        super().step(batch, model, logger, optimizer)
+    def initialize(self):
+        super().initialize()
         args = self.args
-        if optimizer and model.iteration % args.plot_every == 0:
-            logger.add_images("generated", (self.last_generated[:16] + 0.5).clamp(0, 1))
-            logger.render(model.iteration)
+
+        if self.training:
+
+            def plot(iteration):
+                if iteration % args.plot_every == 0:
+                    self.logger.add_images(
+                        "generated",
+                        (self.last_generated[:16] + 0.5).clamp(0, 1),
+                    )
+                    self.logger.render(iteration)
+
+            self.events.iteration_completed.append(plot)
 
     @torchzq.command
     def train(self, *args, plot_every: int = 100, **kwargs):
