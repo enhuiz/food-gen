@@ -82,7 +82,7 @@ class Runner(torchzq.GANRunner):
 
     @property
     def Optimizer(self):
-        return partial(torch.optim.Adam, beta=[0.5, 0.9])
+        return partial(torch.optim.Adam, betas=[0.5, 0.9])
 
     def create_dataset(self):
         dataset = self.autofeed(
