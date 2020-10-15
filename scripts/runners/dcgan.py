@@ -14,7 +14,6 @@ from torchzq.parsing import listof
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchsummary import summary
-from adamp import AdamP
 
 sys.path.append(".")
 
@@ -45,7 +44,10 @@ class AugWrapper(nn.Module):
         cropped = cropped.clone()
 
         return F.interpolate(
-            cropped, size=(size, size), mode="bilinear", align_corners=True
+            cropped,
+            size=(size, size),
+            mode="bilinear",
+            align_corners=True,
         )
 
     @staticmethod
@@ -64,21 +66,25 @@ class AugWrapper(nn.Module):
 
 
 class Runner(torchzq.GANRunner):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.add_argument("--root", type=str, default="data/processed")
-        self.add_argument("--capacity", type=int, default=16)
-        self.add_argument("--zdim", type=int, default=128)
-        self.add_argument("--ds-repeat", type=int, default=100)
-        self.add_argument("--base-size", type=int, default=144)
-        self.add_argument("--crop-size", type=int, default=128)
-        self.add_argument("--aug-prob", type=float, default=0.5)
+    def __init__(
+        self,
+        root: Path = "data/processed",
+        capacity: int = 16,
+        zdim: int = 128,
+        ds_repeat: int = 100,
+        base_size: int = 144,
+        crop_size: int = 128,
+        aug_prob: float = 0.5,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.update_args(locals(), ["self", "kwargs"])
 
     @property
     def Optimizer(self):
-        return partial(AdamP, betas=(0.5, 0.9))
+        return partial(torch.optim.Adam, beta=[0.5, 0.9])
 
-    def create_dataset(self, split):
+    def create_dataset(self):
         dataset = self.autofeed(
             ImageFolder,
             dict(
@@ -98,7 +104,11 @@ class Runner(torchzq.GANRunner):
         G = self.autofeed(
             Generator,
             dict(nc=3),
-            dict(image_size="crop_size", latent_dim="zdim", ngf="capacity"),
+            dict(
+                image_size="crop_size",
+                latent_dim="zdim",
+                ngf="capacity",
+            ),
         )
 
         self.last_generated = None
@@ -110,7 +120,9 @@ class Runner(torchzq.GANRunner):
 
         D = AugWrapper(
             self.autofeed(
-                Discriminator, dict(nc=3), dict(image_size="crop_size", ndf="capacity")
+                Discriminator,
+                dict(nc=3),
+                dict(image_size="crop_size", ndf="capacity"),
             ),
             self.args.crop_size,
             self.args.aug_prob,
@@ -146,11 +158,11 @@ class Runner(torchzq.GANRunner):
 
             self.events.iteration_completed.append(plot)
 
-    @torchzq.command
-    def train(self, *args, plot_every: int = 100, **kwargs):
+    @torchzq.command(inherit=True)
+    def train(self, plot_every: int = 100, **kwargs):
         self.args.plot_every = plot_every
-        super().train(*args, **kwargs)
+        super().train(**kwargs)
 
 
 if __name__ == "__main__":
-    Runner().run()
+    torchzq.start(Runner)
