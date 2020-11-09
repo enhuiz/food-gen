@@ -10,10 +10,11 @@ import torchzq
 from functools import partial
 from pathlib import Path
 from torch.utils.data import ConcatDataset
-from torchzq.parsing import listof
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchsummary import summary
+from adabelief_pytorch import AdaBelief
+
 
 sys.path.append(".")
 
@@ -82,7 +83,7 @@ class Runner(torchzq.GANRunner):
 
     @property
     def Optimizer(self):
-        return partial(torch.optim.Adam, betas=[0.5, 0.9])
+        return partial(AdaBelief, eps=1e-12, betas=(0.5, 0.9))
 
     def create_dataset(self):
         dataset = self.autofeed(
