@@ -1,8 +1,8 @@
-name: dcgan
-runner: scripts/runners/dcgan.py
+runner: food_gan
 
 train:
   d_lr: 2e-4
   g_lr: 1e-4
-  use_fp16: true
   batch_size: 64
+  validate_every_epoch: 5
+  save_every_epoch: 10

@@ -65,7 +65,6 @@ class Runner(torchzq.Runner):
         d_lr: float = 1e-4,
         g_lr: float = 1e-4,
         capacity: int = 16,
-        zdim: int = 128,
         ds_repeat: int = 100,
         base_size: int = 144,
         crop_size: int = 128,
@@ -78,7 +77,7 @@ class Runner(torchzq.Runner):
         if not root.exists():
             self.preprocess_dataset()
 
-    def create_dataset(self):
+    def create_dataset(self, mode):
         args = self.args
 
         dataset = ImageFolder(
@@ -97,21 +96,36 @@ class Runner(torchzq.Runner):
 
     def create_optimizers(self):
         args = self.args
-        g_optimizer = torch.optim.Adam(self.generator.parameters(), args.g_lr)
         d_optimizer = torch.optim.Adam(self.discriminator.parameters(), args.d_lr)
+        g_optimizer = torch.optim.Adam(self.generator.parameters(), args.g_lr)
         return [d_optimizer, g_optimizer]
 
     def create_model(self):
         args = self.args
-        self.generator = Generator(3, args.latent_dim, args.capacity)
-        self.discriminator = Discriminator(3, args.capacity)
-        return nn.ModuleList([self.generator, self.discriminator])
+        self.generator = Generator(ngf=args.capacity)
+        self.discriminator = Discriminator(ndf=args.capacity)
+        return nn.ModuleDict(
+            dict(
+                generator=self.generator,
+                discriminator=self.discriminator,
+            )
+        )
 
-    def prepare_batch(self, batch):
+    def prepare_batch(self, batch, mode):
         x, _ = batch
         return x.to(self.args.device)
 
+    def clip_grad_norm(self, optimizer_idx):
+        args = self.args
+        return nn.utils.clip_grad_norm_(
+            self.discriminator.parameters()
+            if optimizer_idx == 0
+            else self.generator.parameters(),
+            args.grad_clip_thres or 1e9,
+        )
+
     def training_step(self, real, optimizer_idx):
+        args = self.args
         if optimizer_idx == 0:
             with torch.no_grad():
                 fake = self.generator(n=len(real))
@@ -131,7 +145,16 @@ class Runner(torchzq.Runner):
 
         elif optimizer_idx == 1:
             fake = self.generator(n=len(real))
-            loss_fake = self.discriminator(fake)
+
+            params = [p for p in self.discriminator.parameters() if p.requires_grad]
+
+            for p in params:
+                p.requires_grad_(False)
+
+            loss_fake = self.discriminator(fake).mean()
+
+            for p in params:
+                p.requires_grad_(True)
 
             loss = loss_fake
 
