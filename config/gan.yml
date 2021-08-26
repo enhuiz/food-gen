@@ -1,4 +1,4 @@
-runner: food_gan
+runner: food-gen-gan 
 
 train:
   d_lr: 2e-4

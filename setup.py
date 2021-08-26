@@ -21,7 +21,7 @@ def write_version(version_core, pre_release=True):
     else:
         version = version_core
 
-    with open(Path("food_gan", "version.py"), "w") as f:
+    with open(Path("food_gen", "version.py"), "w") as f:
         f.write('__version__ = "{}"\n'.format(version))
 
     return version
@@ -31,7 +31,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name="food_gan",
+    name="food-gen",
     python_requires=">=3.6.0",
     version=write_version("0.0.1"),
     description="WIP",
@@ -46,7 +46,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "food_gan=food_gan.runner:main",
+            "food-gen-gan=food_gen.runners.gan:main",
+            "food-gen-vae=food_gen.runners.vae:main",
         ],
     },
 )

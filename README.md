@@ -1,25 +1,21 @@
-# FoodGAN: Generate Fake Foods.
-
-## Model
-
-The model in this repo is a simple DCGAN, you may find its definition [here](https://github.com/enhuiz/foodgan/blob/5cc9350342887c406476a45b9c94777eb4f90e04/scripts/models/dcgan.py#L5).
-
+# FoodGen: A Collection of Generative Models for Fake Foods
 
 ## Setup
 
 ```
-pip install -r requirements.txt
+pip install .
 ```
 
-## Run
+## Models
 
-```python
-zouqi config/dcgan.yml train
+### GAN
+
 ```
-
-## Example Runs
-
-After 25k iterations of runs:
+tzq config/gan.yml train
+```
 
 ![](image/2020-09-30-16-54-13.png)
 
+## Credits
+
+The food images are collected from [Weibo](https://weibo.com/3973876838/HwLFEyHv0).
