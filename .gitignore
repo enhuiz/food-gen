@@ -6,3 +6,5 @@ vis
 *.swp
 .ipynb_checkpoints
 food_gan/version.py
+runs
+wandb
