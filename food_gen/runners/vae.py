@@ -8,16 +8,19 @@ from .base import Runner as BaseRunner
 from ..models.encoders import VanillaEncoder
 from ..models.generators import VanillaGenerator
 from ..models.vae.bottleneck import Bottleneck
+from ..models.perceptual import PerceptualFeatures
 
 
 class Runner(BaseRunner):
-    def __init__(self, β=1, **kwargs):
+    def __init__(self, β: int = 1, perceptual: bool = False, **kwargs):
         super().__init__(**kwargs)
 
     def create_model(self):
         self.encoder = VanillaEncoder()
         self.bottleneck = Bottleneck()
         self.generator = VanillaGenerator()
+        self.perceptual = PerceptualFeatures([0.5, 0.25])
+        self.perceptual.to(self.args.device)
         return nn.Sequential(self.encoder, self.bottleneck, self.generator)
 
     def training_step(self, real, _):
@@ -27,8 +30,16 @@ class Runner(BaseRunner):
         z = self.bottleneck(h)
         fake = self.generator(z=z)
 
-        l1_loss = F.l1_loss(fake, real)
-        kl_loss = args.β / np.prod(fake.shape[1:]) * self.bottleneck.kl_prior.mean()
+        if args.perceptual:
+            p_fake = self.perceptual(fake)
+            p_real = self.perceptual(real)
+            numel = p_fake.shape[1]
+            l1_loss = F.l1_loss(p_fake, p_real)
+        else:
+            numel = np.prod(fake.shape[1:])
+            l1_loss = F.l1_loss(fake, real)
+
+        kl_loss = args.β / numel * self.bottleneck.kl_prior.mean()
 
         loss = l1_loss + kl_loss
 

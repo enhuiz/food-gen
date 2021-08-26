@@ -43,6 +43,7 @@ setup(
     install_requires=[
         "torchzq >= 1.0.9.dev1",
         "torch",
+        "einops",
     ],
     entry_points={
         "console_scripts": [

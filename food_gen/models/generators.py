@@ -16,16 +16,13 @@ class Generator(nn.Module):
     def device(self):
         return next(self.parameters()).device
 
+    @torch.no_grad()
     def create_log_dict(self, n=16, z=None, prefix=""):
         if z is not None:
             images = self(z=z)
         else:
             images = self(n=n)
-        return {
-            f"{prefix}fake": wandb.Image(
-                images + 0.5,  # denormalize
-            ),
-        }
+        return {f"{prefix}fake": wandb.Image(images)}
 
 
 class VanillaGenerator(Generator):

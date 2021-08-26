@@ -1,0 +1,3 @@
+default: config/vae.yml
+
+perceptual: true

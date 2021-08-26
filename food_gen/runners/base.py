@@ -63,6 +63,10 @@ class Runner(torchzq.Runner):
         for i, slice in enumerate(tqdm.tqdm(slice_iter())):
             cv2.imwrite(str(Path(outdir, f"{i:06d}.png")), slice)
 
+    @torchzq.command
+    def train(self, max_epochs: int = 10, **kwargs):
+        super().train(max_epochs=max_epochs, **kwargs)
+
 
 def main():
     torchzq.start(Runner)
