@@ -5,6 +5,6 @@ data/processed
 vis
 *.swp
 .ipynb_checkpoints
-food_gan/version.py
+food_gen/version.py
 runs
 wandb
