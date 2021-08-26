@@ -14,7 +14,7 @@ pip install .
 tzq config/vanilla/gan.yml train
 ```
 
-![](image/2020-09-30-16-54-13.png)
+![](https://api.wandb.ai/files/enhuiz/food-gen/gc7b1ldp/media/images/fake_11001_6fb1ec2bf61792ea4d26.png)
 
 ### VAE
 
@@ -22,11 +22,15 @@ tzq config/vanilla/gan.yml train
 tzq config/vanilla/vae.yml train
 ```
 
+![](https://api.wandb.ai/files/enhuiz/food-gen/wu0fv2ea/media/images/fake_11001_c8e66f957db742ae47b3.png)
+
 ### VAE with perceptual loss
 
 ```
 tzq config/vanilla/perceptual-vae.yml train
 ```
+
+![](https://api.wandb.ai/files/enhuiz/food-gen/w1jilxp4/media/images/fake_11001_3151b19e172b0e9fe66b.png)
 
 ## More Results
 
