@@ -1,16 +1,12 @@
-import tqdm
-import cv2
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchzq
-from pathlib import Path
-from torch.utils.data import ConcatDataset
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
 
-from .models.dcgan import Generator, Discriminator
+from .base import Runner as BaseRunner
+from ..models.generators import VanillaGenerator
+from ..models.gan.discriminator import Discriminator
 
 
 class AugWrapper(nn.Module):
@@ -58,41 +54,15 @@ class AugWrapper(nn.Module):
         return self.D(images)
 
 
-class Runner(torchzq.Runner):
+class Runner(BaseRunner):
     def __init__(
         self,
-        root: Path = Path("data/processed"),
         d_lr: float = 1e-4,
         g_lr: float = 1e-4,
-        capacity: int = 16,
-        ds_repeat: int = 100,
-        base_size: int = 144,
-        crop_size: int = 128,
         aug_prob: float = 0.5,
-        demo_every: int = 1000,
         **kwargs,
     ):
         super().__init__(**kwargs)
-
-        if not root.exists():
-            self.preprocess_dataset()
-
-    def create_dataset(self, mode):
-        args = self.args
-
-        dataset = ImageFolder(
-            root=args.root,
-            transform=transforms.Compose(
-                [
-                    transforms.Resize(args.base_size),
-                    transforms.RandomCrop(args.crop_size),
-                    transforms.ToTensor(),
-                    transforms.Normalize(0.5, 1),
-                ]
-            ),
-        )
-
-        return ConcatDataset([dataset] * self.args.ds_repeat)
 
     def create_optimizers(self):
         args = self.args
@@ -101,19 +71,14 @@ class Runner(torchzq.Runner):
         return [d_optimizer, g_optimizer]
 
     def create_model(self):
-        args = self.args
-        self.generator = Generator(ngf=args.capacity)
-        self.discriminator = Discriminator(ndf=args.capacity)
+        self.generator = VanillaGenerator()
+        self.discriminator = Discriminator()
         return nn.ModuleDict(
             dict(
                 generator=self.generator,
                 discriminator=self.discriminator,
             )
         )
-
-    def prepare_batch(self, batch, mode):
-        x, _ = batch
-        return x.to(self.args.device)
 
     def clip_grad_norm(self, optimizer_idx):
         args = self.args
@@ -165,24 +130,6 @@ class Runner(torchzq.Runner):
             assert False, "Too many optimizers!"
 
         return loss, stat_dict
-
-    def preprocess_dataset(self):
-        root = Path("data/raw")
-
-        def slice_iter():
-            stride = 167
-            size = 163
-            for path in sorted(root.glob("*.jpg")):
-                image = cv2.imread(str(path))
-                image = np.pad(image, ((0, 1), (0, 0), (0, 0)))
-                for i in range(0, image.shape[0], stride):
-                    for j in range(0, image.shape[1], stride):
-                        yield image[i : i + stride, j : j + stride][:size, :size]
-
-        outdir = Path("data/processed/0")
-        outdir.mkdir(parents=True, exist_ok=True)
-        for i, slice in enumerate(tqdm.tqdm(slice_iter())):
-            cv2.imwrite(str(Path(outdir, f"{i:06d}.png")), slice)
 
 
 def main():
