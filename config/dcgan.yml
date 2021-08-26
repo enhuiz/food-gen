@@ -2,7 +2,7 @@ name: dcgan
 runner: scripts/runners/dcgan.py
 
 train:
-  d-lr: 2e-4
-  g-lr: 1e-4
+  d_lr: 2e-4
+  g_lr: 1e-4
   use_fp16: true
   batch_size: 64
