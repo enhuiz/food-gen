@@ -44,6 +44,7 @@ setup(
         "torchzq >= 1.0.9.dev1",
         "torch",
         "einops",
+        "opencv-python",
     ],
     entry_points={
         "console_scripts": [
