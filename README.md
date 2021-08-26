@@ -1,4 +1,4 @@
-# FoodGen: A Collection of Generative Models for Fake Foods
+# FoodGen: a collection of generative models for fake foods.
 
 ## Setup
 
@@ -6,12 +6,12 @@
 pip install .
 ```
 
-## Models
+## Models (Vanilla Generator)
 
 ### GAN
 
 ```
-tzq config/gan.yml train
+tzq config/vanilla/gan.yml train
 ```
 
 ![](image/2020-09-30-16-54-13.png)
@@ -19,9 +19,19 @@ tzq config/gan.yml train
 ### VAE
 
 ```
-tzq config/vae.yml train
+tzq config/vanilla/vae.yml train
 ```
+
+### VAE with perceptual loss
+
+```
+tzq config/vanilla/perceptual-vae.yml train
+```
+
+## More Results
+
+Detailed running results can be found [here](https://wandb.ai/enhuiz/food-gen).
 
 ## Credits
 
-The food images are collected from [Weibo](https://weibo.com/3973876838/HwLFEyHv0).
+- The food images are collected from [Weibo](https://weibo.com/3973876838/HwLFEyHv0).

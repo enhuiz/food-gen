@@ -6,7 +6,6 @@ import torchzq
 
 from .base import Runner as BaseRunner
 from ..models.encoders import VanillaEncoder
-from ..models.generators import VanillaGenerator
 from ..models.vae.bottleneck import Bottleneck
 from ..models.perceptual import PerceptualFeatures
 
@@ -18,7 +17,7 @@ class Runner(BaseRunner):
     def create_model(self):
         self.encoder = VanillaEncoder()
         self.bottleneck = Bottleneck()
-        self.generator = VanillaGenerator()
+        self.generator = self.create_generator()
         self.perceptual = PerceptualFeatures([0.5, 0.25])
         self.perceptual.to(self.args.device)
         return nn.Sequential(self.encoder, self.bottleneck, self.generator)

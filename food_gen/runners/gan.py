@@ -5,7 +5,6 @@ import torch.nn.functional as F
 import torchzq
 
 from .base import Runner as BaseRunner
-from ..models.generators import VanillaGenerator
 from ..models.gan.discriminator import Discriminator
 
 
@@ -71,7 +70,7 @@ class Runner(BaseRunner):
         return [d_optimizer, g_optimizer]
 
     def create_model(self):
-        self.generator = VanillaGenerator()
+        self.generator = self.create_generator()
         self.discriminator = Discriminator()
         return nn.ModuleDict(
             dict(

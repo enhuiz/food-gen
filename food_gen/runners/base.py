@@ -7,6 +7,8 @@ from torch.utils.data import ConcatDataset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
+from ..models.generators import VanillaGenerator
+
 
 class Runner(torchzq.Runner):
     def __init__(
@@ -17,12 +19,20 @@ class Runner(torchzq.Runner):
         crop_size: int = 128,
         demo_every: int = 1000,
         wandb_project: str = "food-gen",
+        generator: str = "vanilla",
         **kwargs,
     ):
         super().__init__(**kwargs)
 
         if not root.exists():
             self.preprocess_dataset()
+
+    def create_generator(self):
+        args = self.args
+        if args.generator == "vanilla":
+            return VanillaGenerator()
+        else:
+            raise NotImplementedError(args.generator)
 
     def create_dataset(self, mode):
         args = self.args
