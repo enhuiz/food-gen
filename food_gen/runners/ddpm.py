@@ -64,6 +64,7 @@ class Runner(BaseRunner):
         return compute_κ(t, args.β0, args.β1)
 
     def forward(self, x, κ):
+        κ = κ.flatten(1)
         z = self.encoder(x)
         z = self.proj(torch.cat([z, self.κ_encoder(κ)], dim=-1))
         return self.generator(z)
@@ -101,7 +102,7 @@ class Runner(BaseRunner):
         ε = torch.randn_like(real, device=args.device)
         perturbed_real = κ * real + σ * ε
 
-        ε_hat = self.forward(perturbed_real, κ.flatten(0))
+        ε_hat = self.forward(perturbed_real, κ)
 
         loss = F.l1_loss(ε_hat, ε)
         stat_dict = {"loss": loss.item()}
