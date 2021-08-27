@@ -110,7 +110,7 @@ class Runner(BaseRunner):
         del κ
 
         if self.global_step % args.demo_every == 1:
-            κ = self.eval_κ
+            κ = self.eval_κ.to(args.device)
 
             xT = torch.randn_like(real)[:16]
 
