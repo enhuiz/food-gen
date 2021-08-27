@@ -90,6 +90,25 @@ class Runner(BaseRunner):
 
         return xim1
 
+    @torch.no_grad()
+    def sample(self, xT):
+        args = self.args
+        κ = self.eval_κ.to(args.device)
+
+        xs = [xT]
+
+        # expand such that every sample can have different κ
+        κ = repeat(κ, "t -> t b", b=len(xT))
+
+        x = xT
+        for i in tqdm.tqdm(list(reversed(range(len(κ))))):
+            κi = κ[i]
+            κim1 = κ[i - 1] if i > 1 else torch.full_like(κ[i], 1)
+            x = self.inverse(x, κi, κim1, last=i == 0)
+            xs.append(x)
+
+        return xs[-1]
+
     def training_step(self, real, _):
         args = self.args
 
@@ -107,26 +126,9 @@ class Runner(BaseRunner):
         loss = F.l1_loss(ε_hat, ε)
         stat_dict = {"loss": loss.item()}
 
-        del κ
-
         if self.global_step % args.demo_every == 1:
-            κ = self.eval_κ.to(args.device)
-
-            xT = torch.randn_like(real)[:16]
-
-            xs = [xT]
-
-            # expand such that every sample can have different κ
-            κ = repeat(κ, "t -> t b", b=len(xT))
-
-            x = xT
-            for i in tqdm.tqdm(list(reversed(range(len(κ))))):
-                κi = κ[i]
-                κim1 = κ[i - 1] if i > 1 else torch.full_like(κ[i], 1)
-                x = self.inverse(x, κi, κim1, last=i == 0)
-                xs.append(x)
-
-            log_dict = {"fake": self.logger.Image(xs[-1])}
+            fake = self.sample(torch.randn_like(real)[:16])
+            log_dict = {"fake": self.logger.Image(fake)}
             self.logger.log(log_dict, self.global_step)
 
         return loss, stat_dict
