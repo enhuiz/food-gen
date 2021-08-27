@@ -20,7 +20,7 @@ class Runner(BaseRunner):
         self.generator = self.create_generator()
         self.perceptual = PerceptualFeatures([0.5, 0.25])
         self.perceptual.to(self.args.device)
-        return nn.Sequential(self.encoder, self.bottleneck, self.generator)
+        return nn.ModuleList([self.encoder, self.bottleneck, self.generator])
 
     def training_step(self, real, _):
         args = self.args
