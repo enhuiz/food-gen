@@ -27,7 +27,7 @@ tzq config/vanilla/vae.yml train
 ### VAE with perceptual loss
 
 ```
-tzq config/vanilla/perceptual-vae.yml train
+tzq config/vanilla/vae-perceptual.yml train
 ```
 
 ![](https://api.wandb.ai/files/enhuiz/food-gen/w1jilxp4/media/images/fake_11001_3151b19e172b0e9fe66b.png)
