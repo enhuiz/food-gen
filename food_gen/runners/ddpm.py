@@ -104,7 +104,7 @@ class Runner(BaseRunner):
         ε_hat = self.forward(perturbed_real, κ.flatten(0))
 
         loss = F.l1_loss(ε_hat, ε)
-        stat_dict = {"loss": loss}
+        stat_dict = {"loss": loss.item()}
 
         del κ
 
