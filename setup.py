@@ -50,6 +50,7 @@ setup(
         "console_scripts": [
             "food-gen-gan=food_gen.runners.gan:main",
             "food-gen-vae=food_gen.runners.vae:main",
+            "food-gen-ddpm=food_gen.runners.ddpm:main",
         ],
     },
 )
