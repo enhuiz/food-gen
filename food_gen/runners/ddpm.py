@@ -29,10 +29,11 @@ def unsqueeze_like(a, b, dim=-1):
 class Runner(BaseRunner):
     def __init__(
         self,
-        β0: float = 1e-3,
-        β1: float = 10,
+        β0: float = 1e-1,
+        β1: float = 20,
         dim_pe: int = 128,
         eval_steps: int = 100,
+        lr: float = 2e-4,
         **kwargs,
     ):
         super().__init__(**kwargs)
